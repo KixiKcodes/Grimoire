@@ -1,17 +1,15 @@
-package org.kixik.botc
+package org.kixik.botc.service
 
 import android.content.Context
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.decodeFromStream
 
 @Serializable
 data class ScriptMeta(val id: String, val author: String, val name: String)
-
-@Serializable
-data class ScriptFile(val meta: ScriptMeta, val characterIds: List<String>)
 
 data class Script(
     val name: String,
@@ -38,22 +36,18 @@ class ScriptManager(private val context: Context, private val gameElements: Game
 
             val rawArray = try {
                 context.assets.open(path).use { input ->
-                    Json.decodeFromStream<List<kotlinx.serialization.json.JsonElement>>(input)
+                    Json.decodeFromStream<List<JsonElement>>(input)
                 }
             } catch (_: Exception) {
                 return@mapNotNull null
             }
 
-            if (rawArray.isEmpty()) return@mapNotNull null
-
-            // Parse metadata object at index 0
             val meta = try {
                 Json.decodeFromJsonElement<ScriptMeta>(rawArray.first())
             } catch (_: Exception) {
                 return@mapNotNull null
             }
 
-            // Parse remaining elements as string ids
             val ids = rawArray.drop(1).mapNotNull { element ->
                 try {
                     Json.decodeFromJsonElement<String>(element)
@@ -63,7 +57,8 @@ class ScriptManager(private val context: Context, private val gameElements: Game
             }
 
             toScript(
-                scriptFile = ScriptFile(meta = meta, characterIds = ids),
+                meta = meta,
+                characterIds = ids,
                 allCharacters = gameElements.characters,
                 allJinxes = gameElements.jinxes
             )
@@ -71,7 +66,8 @@ class ScriptManager(private val context: Context, private val gameElements: Game
     }
 
     private fun toScript(
-        scriptFile: ScriptFile,
+        meta: ScriptMeta,
+        characterIds: List<String>,
         allCharacters: List<Character>,
         allJinxes: List<Jinx>
     ): Script {
@@ -85,7 +81,7 @@ class ScriptManager(private val context: Context, private val gameElements: Game
         var fabled: Character? = null
         var loric: Character? = null
 
-        scriptFile.characterIds.forEach { id ->
+        characterIds.forEach { id ->
             val character = byId[id] ?: return@forEach
             when (character.type) {
                 CharacterType.TOWNSFOLK -> townsfolk += character
@@ -99,8 +95,8 @@ class ScriptManager(private val context: Context, private val gameElements: Game
         }
 
         val base = Script(
-            name = scriptFile.meta.name,
-            author = scriptFile.meta.author,
+            name = meta.name,
+            author = meta.author,
             townsfolk = townsfolk,
             outsiders = outsiders,
             minions = minions,

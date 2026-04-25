@@ -1,4 +1,4 @@
-package org.kixik.botc
+package org.kixik.botc.service
 
 import android.content.Context
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import org.kixik.botc.R
 
 enum class CharacterTeam {
     GOOD,

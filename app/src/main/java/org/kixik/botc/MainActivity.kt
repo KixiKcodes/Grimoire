@@ -4,39 +4,58 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import org.kixik.botc.ui.screen.MainMenu
+import org.kixik.botc.ui.screen.ScriptsScreen
+import org.kixik.botc.ui.screen.SetupGameScreen
 import org.kixik.botc.ui.theme.BotCgamemasterTheme
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             BotCgamemasterTheme {
                 val navController = rememberNavController()
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                val backStackEntry by navController.currentBackStackEntryAsState()
+                val route = backStackEntry?.destination?.route ?: Routes.MAINMENU
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    topBar = {
+                        if (route != Routes.MAINMENU) CenterAlignedTopAppBar(
+                            title = { Text(getScreenTitle(route)) },
+                            navigationIcon = {
+                                IconButton(
+                                    onClick = { navController.popBackStack() }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back"
+                                    )
+                                }
+                            }
+                        )
+                    },
+                ) { innerPadding ->
                     AppNavHost(
                         navController = navController,
                         modifier = Modifier.padding(innerPadding)
@@ -47,11 +66,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun getScreenTitle(route: String): String {
+    return when (route) {
+        Routes.SETUPGGAME -> "Set Up Game"
+        Routes.VIEWSCRIPTS -> "View Scripts"
+        else -> ""
+    }
+}
+
 object Routes {
     const val MAINMENU = "main_menu"
     const val SETUPGGAME = "setup_game"
     const val VIEWSCRIPTS = "view_scripts"
-    const val SETTINGS = "settings"
 }
 
 @Composable
@@ -67,112 +93,14 @@ fun AppNavHost(
         composable(Routes.MAINMENU) {
             MainMenu(
                 onSetupGameClick = { navController.navigate(Routes.SETUPGGAME) },
-                onViewScriptsClick = { navController.navigate(Routes.VIEWSCRIPTS) },
-                onSettingsClick = { navController.navigate(Routes.SETTINGS) }
+                onViewScriptsClick = { navController.navigate(Routes.VIEWSCRIPTS) }
             )
         }
         composable(Routes.SETUPGGAME) {
-            SetupGameScreen(onBackClick = { navController.navigate(Routes.MAINMENU) })
+            SetupGameScreen()
         }
         composable(Routes.VIEWSCRIPTS) {
-            ViewScriptsScreen(onBackClick = { navController.navigate(Routes.MAINMENU) })
-        }
-        composable(Routes.SETTINGS) {
-            SettingsScreen(onBackClick = { navController.navigate(Routes.MAINMENU) })
-        }
-    }
-}
-
-@Composable
-fun MainMenu(
-    onSetupGameClick: () -> Unit,
-    onViewScriptsClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo_game),
-            contentDescription = "Title Image",
-            modifier = Modifier.scale(2f)
-        )
-        Text("Gamemaster Utility App", fontSize = 18.sp, color = Color.White)
-        Column(
-            modifier = Modifier.width(intrinsicSize = IntrinsicSize.Max)
-        ) {
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onSetupGameClick,
-            ) {
-                Text("Set Up Game", fontSize = 16.sp)
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onViewScriptsClick,
-            ) {
-                Text("View Scripts", fontSize = 16.sp)
-            }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onSettingsClick,
-            ) {
-                Text("Settings", fontSize = 16.sp)
-            }
-        }
-    }
-}
-
-@Composable
-fun SetupGameScreen(
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Set Up Game Screen")
-        Button(onClick = onBackClick) {
-            Text("Back", fontSize = 16.sp)
-        }
-    }
-}
-
-@Composable
-fun ViewScriptsScreen(
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("View Scripts Screen")
-        Button(onClick = onBackClick) {
-            Text("Back", fontSize = 16.sp)
-        }
-    }
-}
-
-@Composable
-fun SettingsScreen(
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Settings Screen")
-        Button(onClick = onBackClick) {
-            Text("Back", fontSize = 16.sp)
+            ScriptsScreen()
         }
     }
 }

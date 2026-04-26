@@ -1,6 +1,7 @@
 package org.kixik.botc.service
 
 import android.content.Context
+import android.util.Log
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -56,6 +57,7 @@ class ScriptManager(private val context: Context, private val gameElements: Game
                 }
             }
 
+            Log.d("ScriptManager", "Loaded script '${meta.name}'")
             toScript(
                 meta = meta,
                 characterIds = ids,

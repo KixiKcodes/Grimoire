@@ -1,6 +1,7 @@
 package org.kixik.botc.service
 
 import android.content.Context
+import android.util.Log
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -17,10 +18,10 @@ enum class CharacterTeam {
 @Serializable
 enum class CharacterType(val team: CharacterTeam) {
     @SerialName("townsfolk") TOWNSFOLK(CharacterTeam.GOOD),
-    @SerialName("outsider") OUTSIDER(CharacterTeam.GOOD),
-    @SerialName("minion") MINION(CharacterTeam.EVIL),
-    @SerialName("demon") DEMON(CharacterTeam.EVIL),
-    @SerialName("traveller") TRAVELLER(CharacterTeam.NEUTRAL),
+    @SerialName("outsiders") OUTSIDER(CharacterTeam.GOOD),
+    @SerialName("minions") MINION(CharacterTeam.EVIL),
+    @SerialName("demons") DEMON(CharacterTeam.EVIL),
+    @SerialName("travellers") TRAVELLER(CharacterTeam.NEUTRAL),
     @SerialName("fabled") FABLED(CharacterTeam.NEUTRAL),
     @SerialName("loric") LORIC(CharacterTeam.NEUTRAL)
 }
@@ -52,7 +53,7 @@ class GameElements(val context: Context) {
                     description = characterData.description
                 )
             }
-        }
+        }.also { Log.d("GameElements", "Loaded ${it.size} characters") }
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -67,6 +68,6 @@ class GameElements(val context: Context) {
                 ),
                 description = jinxData.description
             )
-        }
+        }.also { Log.d("GameElements", "Loaded ${it.size} jinxes") }
     }
 }

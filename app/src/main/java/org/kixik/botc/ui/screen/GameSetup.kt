@@ -59,6 +59,12 @@ fun SetupGameScreen(
     var selectedScriptIndex by remember { mutableIntStateOf(-1) }
     val selectedScript by viewModel.selectedScript.collectAsState()
     val playerList by viewModel.playerList.collectAsState()
+    val status = when {
+        selectedScript == null -> "Please select a script."
+        playerList.size < 5 -> "Please add at last 5 players."
+        playerList.any { it.isBlank() } -> "Please fill in all player names."
+        else -> null
+    }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -141,8 +147,16 @@ fun SetupGameScreen(
                 )
             }
         }
+        if (status != null) {
+            Text(
+                text = status,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
         Button(
             onClick = {},
+            enabled = status == null
         ) {
             Text("Assign Roles", fontSize = 16.sp)
         }

@@ -80,17 +80,17 @@ class RoleAssigner {
 
         var amnesiacRole: Character? = null
         if (selectedTownsfolk.any { it.id == "amnesiac" }) {
-            val remainingTownsfolk = script.townsfolk - selectedTownsfolk
+            val remainingTownsfolk = script.townsfolk - selectedTownsfolk.toSet()
             amnesiacRole = remainingTownsfolk.random()
         }
         var drunkFake: Character? = null
         if (selectedOutsiders.any { it.id == "drunk" }) {
-            val remainingTownsfolk = script.townsfolk - selectedTownsfolk
+            val remainingTownsfolk = script.townsfolk - selectedTownsfolk.toSet()
             drunkFake = remainingTownsfolk.random()
         }
         var marionetteFake: Character? = null
         if (selectedMinions.any { it.id == "marionette" }) {
-            val remainingTownsfolk = script.townsfolk - selectedTownsfolk
+            val remainingTownsfolk = script.townsfolk - selectedTownsfolk.toSet()
             marionetteFake = remainingTownsfolk.random()
         }
         var lunaticFake: Character? = null
@@ -99,13 +99,13 @@ class RoleAssigner {
         val rolesInplay: List<Character> = selectedTownsfolk + selectedOutsiders + selectedMinions + demon
         val goodTeam: List<Character> = selectedTownsfolk + selectedOutsiders
         val allGoodRoles = script.townsfolk + script.outsiders
-        val bluffRoles: List<Character> = allGoodRoles.filterNot { it in goodTeam }
+        val bluffRoles: MutableList<Character> = allGoodRoles.filterNot { it in goodTeam }.toMutableList()
         if (drunkFake != null)
-            bluffRoles - drunkFake
+            bluffRoles -= drunkFake
         if (marionetteFake != null)
-            bluffRoles - marionetteFake
+            bluffRoles -= marionetteFake
         if (amnesiacRole != null)
-            bluffRoles - amnesiacRole
+            bluffRoles -= amnesiacRole
         return ChosenRoles(
             playerRoles = rolesInplay.shuffled(),
             bluffRoles = bluffRoles,
@@ -117,11 +117,8 @@ class RoleAssigner {
     }
 
     fun assignRoles(players: List<String>, playerRoles: List<Character>): Map<String, Character> {
-        val assignments: MutableMap<String, Character> = mutableMapOf()
         val shuffledPlayers = players.shuffled()
         val shuffledRoles = playerRoles.shuffled()
-        for (i in shuffledPlayers.indices)
-            assignments[shuffledPlayers[i]] = shuffledRoles[i]
-        return assignments
+        return shuffledPlayers.zip(shuffledRoles).toMap()
     }
 }

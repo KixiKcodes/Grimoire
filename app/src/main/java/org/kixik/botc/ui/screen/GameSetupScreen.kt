@@ -52,7 +52,8 @@ import org.kixik.botc.viewmodel.GameSetupViewModel
 
 @Composable
 fun SetupGameScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAssignRoles: (String, List<String>) -> Unit
 ) {
     val viewModel: GameSetupViewModel = viewModel()
     val scripts by viewModel.scripts.collectAsState()
@@ -155,7 +156,11 @@ fun SetupGameScreen(
             )
         }
         Button(
-            onClick = {},
+            onClick = {
+                selectedScript?.let { script ->
+                    onAssignRoles(script.name, playerList)
+                }
+            },
             enabled = status == null
         ) {
             Text("Assign Roles", fontSize = 16.sp)

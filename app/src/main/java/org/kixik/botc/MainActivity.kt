@@ -14,7 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,6 +22,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import kotlinx.serialization.Serializable
+import org.kixik.botc.ui.screen.AssignmentPreviewScreen
 import org.kixik.botc.ui.screen.MainMenu
 import org.kixik.botc.ui.screen.ScriptsScreen
 import org.kixik.botc.ui.screen.SetupGameScreen
@@ -37,11 +39,11 @@ class MainActivity : ComponentActivity() {
             BotCgamemasterTheme {
                 val navController = rememberNavController()
                 val backStackEntry by navController.currentBackStackEntryAsState()
-                val route = backStackEntry?.destination?.route ?: Routes.MAINMENU
+                val route = backStackEntry?.destination?.route ?: MainMenu
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
-                        if (route != Routes.MAINMENU) CenterAlignedTopAppBar(
+                        if (route != MainMenu) CenterAlignedTopAppBar(
                             title = { Text(getScreenTitle(route)) },
                             navigationIcon = {
                                 IconButton(
@@ -66,19 +68,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-fun getScreenTitle(route: String): String {
+fun getScreenTitle(route: Any): String {
     return when (route) {
-        Routes.SETUPGGAME -> "Set Up Game"
-        Routes.VIEWSCRIPTS -> "View Scripts"
+        is SetupGame -> "Set Up Game"
+        is AssignmentPreview -> "Assignment Preview"
         else -> ""
     }
 }
 
-object Routes {
-    const val MAINMENU = "main_menu"
-    const val SETUPGGAME = "setup_game"
-    const val VIEWSCRIPTS = "view_scripts"
-}
+@Serializable
+object MainMenu
+@Serializable
+object SetupGame
+@Serializable
+data class AssignmentPreview(val scriptId: String, val players: List<String>)
 
 @Composable
 fun AppNavHost(
@@ -87,20 +90,23 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Routes.MAINMENU,
+        startDestination = MainMenu,
         modifier = modifier
     ) {
-        composable(Routes.MAINMENU) {
+        composable<MainMenu> {
             MainMenu(
-                onSetupGameClick = { navController.navigate(Routes.SETUPGGAME) },
-                onViewScriptsClick = { navController.navigate(Routes.VIEWSCRIPTS) }
+                onSetupGameClick = { navController.navigate(SetupGame) },
+                onViewScriptsClick = {  }
             )
         }
-        composable(Routes.SETUPGGAME) {
-            SetupGameScreen()
+        composable<SetupGame> {
+            SetupGameScreen(onAssignRoles = { scriptId, players ->
+                navController.navigate(AssignmentPreview(scriptId, players))
+            })
         }
-        composable(Routes.VIEWSCRIPTS) {
-            ScriptsScreen()
+        composable<AssignmentPreview> {
+            val route = it.toRoute<AssignmentPreview>()
+            AssignmentPreviewScreen(scriptId = route.scriptId, players = route.players)
         }
     }
 }

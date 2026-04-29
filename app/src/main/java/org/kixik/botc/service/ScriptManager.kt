@@ -129,4 +129,8 @@ class ScriptManager(private val context: Context, private val gameElements: Game
             a in present && b in present
         }
     }
+
+    fun getScriptById(id: String): Script? {
+        return scripts.find { it.name == id }
+    }
 }

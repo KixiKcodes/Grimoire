@@ -1,6 +1,7 @@
 package org.kixik.botc
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,12 +42,12 @@ class MainActivity : ComponentActivity() {
             BotCgamemasterTheme {
                 val navController = rememberNavController()
                 val backStackEntry by navController.currentBackStackEntryAsState()
-                val route = backStackEntry?.destination?.route ?: MainMenu
+                val destination = backStackEntry?.destination
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
-                        if (route != MainMenu) CenterAlignedTopAppBar(
-                            title = { Text(getScreenTitle(route)) },
+                        if (destination?.hasRoute<MainMenu>() == false) CenterAlignedTopAppBar(
+                            title = { Text(getScreenTitle(destination)) },
                             navigationIcon = {
                                 IconButton(
                                     onClick = { navController.popBackStack() }
@@ -68,18 +71,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-fun getScreenTitle(route: Any): String {
-    return when (route) {
-        is SetupGame -> "Set Up Game"
-        is AssignmentPreview -> "Assignment Preview"
+fun getScreenTitle(destination: NavDestination?): String {
+    return when {
+        destination?.hasRoute<SetupGame>() == true -> "Set Up Game"
+        destination?.hasRoute<AssignmentPreview>() == true -> "Assignment Preview"
         else -> ""
     }
 }
 
 @Serializable
-object MainMenu
+data object MainMenu
 @Serializable
-object SetupGame
+data object SetupGame
 @Serializable
 data class AssignmentPreview(val scriptId: String, val players: List<String>)
 

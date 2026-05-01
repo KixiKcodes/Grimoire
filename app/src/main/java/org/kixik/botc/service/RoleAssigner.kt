@@ -2,7 +2,7 @@ package org.kixik.botc.service
 
 import kotlin.math.roundToInt
 
-data class GameAssignments(
+data class GameData(
     val playerRoles: Map<String, Character> = emptyMap(),
     val fabled: Character? = null,
     val loric: Character? = null,
@@ -33,9 +33,7 @@ data class ChosenRoles(
     val marionetteFake: Character?,
 )
 
-class RoleAssigner {
-    val players: List<String> = TODO("Get list from setup screen.")
-
+class RoleAssigner(private val gameElements: GameElements) {
     val roleCountTable: Map<Int, RoleCount> = mapOf(
         5 to RoleCount(4, 0, 0, 1),
         6 to RoleCount(4, 0, 1, 1),
@@ -120,5 +118,43 @@ class RoleAssigner {
         val shuffledPlayers = players.shuffled()
         val shuffledRoles = playerRoles.shuffled()
         return shuffledPlayers.zip(shuffledRoles).toMap()
+    }
+
+    fun computeJinxes(playerRoles: List<Character>): List<Jinx> {
+        return gameElements.jinxes.filter { jinx ->
+            playerRoles.contains(jinx.characters.first) && playerRoles.contains(jinx.characters.second)
+        }
+    }
+
+    fun setRoleTarget(playerRoles: List<Character>, assignments: Map<String, Character>, id: String): String? {
+        if (playerRoles.any{ it.id == id }) {
+            val relevantPlayer = assignments.entries.first { it.value.id == id }.key
+            val validTargets = assignments.filter {
+                it.key != relevantPlayer && it.value.type.team == CharacterTeam.GOOD
+            }.map { it.key }
+            return validTargets.random()
+        }
+        return null
+    }
+
+    fun generateGameData(playerNames: List<String>, selectedScript: Script): GameData {
+        val chosenRoles = pickRoles(selectedScript, playerNames)
+        val assignments = assignRoles(playerNames, chosenRoles.playerRoles)
+        val gameData = GameData(
+            playerRoles = assignments,
+            fabled = selectedScript.fabled,
+            loric = selectedScript.loric,
+            activeJinxes = if (selectedScript.fabled?.id == "djinn")
+                computeJinxes(chosenRoles.playerRoles) else emptyList(),
+            bluffRoles = chosenRoles.bluffRoles,
+            amnesiacRole = chosenRoles.amnesiacRole,
+            drunkFake = chosenRoles.drunkFake,
+            lunaticFake = chosenRoles.lunaticFake,
+            marionetteFake = chosenRoles.marionetteFake,
+            grandmotherTarget = setRoleTarget(chosenRoles.playerRoles, assignments, "grandmother"),
+            evilTwinTarget = setRoleTarget(chosenRoles.playerRoles, assignments, "eviltwin"),
+            bootleggerHouseRule = null
+        )
+        return gameData
     }
 }

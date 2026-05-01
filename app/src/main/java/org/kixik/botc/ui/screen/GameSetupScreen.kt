@@ -1,8 +1,6 @@
 package org.kixik.botc.ui.screen
 
-import android.content.Context
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,16 +35,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.kixik.botc.R
 import org.kixik.botc.service.Character
-import org.kixik.botc.service.CharacterType
 import org.kixik.botc.service.Script
+import org.kixik.botc.ui.component.CharacterRow
+import org.kixik.botc.ui.component.GenericIcon
 import org.kixik.botc.viewmodel.GameSetupViewModel
 
 @Composable
@@ -72,7 +66,7 @@ fun SetupGameScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
                 .weight(1f),
@@ -236,7 +230,7 @@ private fun ExpandableCard(
 
 @Composable
 private fun ScriptPreview(
-    script: Script,
+    script: Script
 ) {
     Column(
         modifier = Modifier.padding(16.dp),
@@ -289,93 +283,5 @@ private fun ScriptSection(
                 CharacterRow(character = character)
             }
         }
-    }
-}
-
-@Composable
-private fun CharacterRow(
-    character: Character,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        CharacterIcon(character = character)
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = character.name,
-                style = MaterialTheme.typography.titleSmall
-            )
-            Text(
-                text = character.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun GenericIcon(
-    type: CharacterType,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val iconResId = remember(type) {
-        characterIconResId(context, Character(id = "", name = "", type = type, description = ""))
-    }
-
-    Image(
-        painter = painterResource(id = iconResId),
-        contentDescription = type.name,
-        modifier = modifier
-            .size(56.dp)
-            .clip(RoundedCornerShape(10.dp))
-    )
-}
-
-@Composable
-private fun CharacterIcon(
-    character: Character,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val iconResId = remember(character.id, character.type) {
-        characterIconResId(context, character)
-    }
-
-    Image(
-        painter = painterResource(id = iconResId),
-        contentDescription = character.name,
-        modifier = modifier
-            .size(56.dp)
-            .clip(RoundedCornerShape(10.dp))
-    )
-}
-
-@Suppress("DiscouragedApi")
-private fun characterIconResId(context: Context, character: Character): Int {
-    val specificIcon = context.resources.getIdentifier(
-        "icon_${character.id}",
-        "drawable",
-        context.packageName
-    )
-
-    if (specificIcon != 0) return specificIcon
-
-    return when (character.type) {
-        CharacterType.TOWNSFOLK -> R.drawable.generic_townsfolk
-        CharacterType.OUTSIDER -> R.drawable.generic_outsider
-        CharacterType.MINION -> R.drawable.generic_minion
-        CharacterType.DEMON -> R.drawable.generic_demon
-        CharacterType.TRAVELLER -> R.drawable.generic_traveller
-        CharacterType.FABLED -> R.drawable.generic_fabled
-        CharacterType.LORIC -> R.drawable.generic_loric
     }
 }

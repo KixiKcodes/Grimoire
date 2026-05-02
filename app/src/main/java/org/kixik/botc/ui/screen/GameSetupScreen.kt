@@ -1,6 +1,7 @@
 package org.kixik.botc.ui.screen
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,10 +24,12 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,12 +38,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.kixik.botc.R
 import org.kixik.botc.service.Character
 import org.kixik.botc.service.Script
-import org.kixik.botc.ui.component.CharacterRow
+import org.kixik.botc.ui.component.CharacterIcon
 import org.kixik.botc.ui.component.GenericIcon
 import org.kixik.botc.viewmodel.GameSetupViewModel
 
@@ -54,10 +64,11 @@ fun SetupGameScreen(
     var selectedScriptIndex by remember { mutableIntStateOf(-1) }
     val selectedScript by viewModel.selectedScript.collectAsState()
     val playerList by viewModel.playerList.collectAsState()
+    val hasBlankNames = playerList.any { it.isBlank() }
     val status = when {
         selectedScript == null -> "Please select a script."
         playerList.size < 5 -> "Please add at last 5 players."
-        playerList.any { it.isBlank() } -> "Please fill in all player names."
+        hasBlankNames -> "Unnamed players will be automatically named."
         else -> null
     }
 
@@ -117,9 +128,7 @@ fun SetupGameScreen(
                     modifier = Modifier.fillMaxWidth(),
                     trailingIcon = {
                         FilledIconButton(
-                            onClick = {
-                                viewModel.removePlayer(index)
-                            },
+                            onClick = { viewModel.removePlayer(index) },
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
@@ -130,32 +139,43 @@ fun SetupGameScreen(
                     }
                 )
             }
-            FilledIconButton(
-                onClick = {
-                    viewModel.addPlayer()
-                },
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add player"
+            if (playerList.size < 15) {
+                FilledIconButton(
+                    onClick = {
+                        viewModel.addPlayer()
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add player"
+                    )
+                }
+            } else {
+                Text(
+                    text = "Maximum supported players is 15.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
         if (status != null) {
             Text(
                 text = status,
-                color = MaterialTheme.colorScheme.error,
+                color = if (playerList.size < 5) MaterialTheme.colorScheme.error else Color(0xffffaa00),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
         Button(
             onClick = {
                 selectedScript?.let { script ->
-                    onAssignRoles(script.name, playerList)
+                    val finalPlayerNames = playerList.mapIndexed { i, name ->
+                        name.ifBlank { "Player ${i + 1}" }
+                    }
+                    onAssignRoles(script.name, finalPlayerNames)
                 }
             },
-            enabled = status == null
+            enabled = (selectedScript != null && playerList.size >= 5)
         ) {
             Text("Assign Roles", fontSize = 16.sp)
         }
@@ -209,20 +229,26 @@ private fun ExpandableCard(
     expandedContent: @Composable () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val cardTexture = ImageBitmap.imageResource(R.drawable.card_texture)
+    val brush = remember(cardTexture) { ShaderBrush(shader = ImageShader(cardTexture, tileModeY = TileMode.Mirror)) }
     Card(
         modifier
             .fillMaxWidth()
             .clickable() { expanded = !expanded }
+            .background(brush = brush, shape = CardDefaults.shape),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        AnimatedContent(targetState = expanded) {
-            if (it)
-                expandedContent()
-            else {
-                Text(
-                    modifier = Modifier.padding(16.dp),
-                    text = collapsedText,
-                    style = MaterialTheme.typography.titleMedium
-                )
+        CompositionLocalProvider(LocalContentColor provides Color.Black) {
+            AnimatedContent(targetState = expanded) {
+                if (it)
+                    expandedContent()
+                else {
+                    Text(
+                        modifier = Modifier.padding(16.dp),
+                        text = collapsedText,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }
@@ -244,7 +270,7 @@ private fun ScriptPreview(
             Text(
                 text = "by ${script.author}",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.DarkGray
             )
         }
 
@@ -252,6 +278,8 @@ private fun ScriptPreview(
         ScriptSection(title = "Outsiders", characters = script.outsiders)
         ScriptSection(title = "Minions", characters = script.minions)
         ScriptSection(title = "Demons", characters = script.demons)
+        ScriptSection(title = "Fabled", characters = script.fabled)
+        ScriptSection(title = "Loric", characters = script.loric)
     }
 }
 
@@ -282,6 +310,35 @@ private fun ScriptSection(
             characters.forEach { character ->
                 CharacterRow(character = character)
             }
+        }
+    }
+}
+
+@Composable
+fun CharacterRow(
+    modifier: Modifier = Modifier,
+    character: Character
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        CharacterIcon(character = character)
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = character.name,
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                text = character.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.DarkGray
+            )
         }
     }
 }

@@ -20,8 +20,8 @@ data class Script(
     val minions: List<Character>,
     val demons: List<Character>,
     val travellers: List<Character>,
-    val fabled: Character?,
-    val loric: Character?,
+    val fabled: List<Character>,
+    val loric: List<Character>,
     val jinxes: List<Jinx>
 )
 
@@ -80,8 +80,8 @@ class ScriptManager(private val context: Context, private val gameElements: Game
         val minions = mutableListOf<Character>()
         val demons = mutableListOf<Character>()
         val travellers = mutableListOf<Character>()
-        var fabled: Character? = null
-        var loric: Character? = null
+        val fabled = mutableListOf<Character>()
+        val loric = mutableListOf<Character>()
 
         characterIds.forEach { id ->
             val character = byId[id] ?: return@forEach
@@ -91,8 +91,8 @@ class ScriptManager(private val context: Context, private val gameElements: Game
                 CharacterType.MINION -> minions += character
                 CharacterType.DEMON -> demons += character
                 CharacterType.TRAVELLER -> travellers += character
-                CharacterType.FABLED -> fabled = character
-                CharacterType.LORIC -> loric = character
+                CharacterType.FABLED -> fabled += character
+                CharacterType.LORIC -> loric += character
             }
         }
 
@@ -113,9 +113,6 @@ class ScriptManager(private val context: Context, private val gameElements: Game
     }
 
     private fun computeJinxes(script: Script, allJinxes: List<Jinx>): List<Jinx> {
-        if (script.fabled != null && script.fabled.id != "djinn")
-            return emptyList()
-
         val present = buildSet {
             addAll(script.townsfolk)
             addAll(script.outsiders)

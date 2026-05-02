@@ -4,8 +4,8 @@ import kotlin.math.roundToInt
 
 data class GameData(
     val playerRoles: Map<String, Character> = emptyMap(),
-    val fabled: Character? = null,
-    val loric: Character? = null,
+    val fabled: List<Character> = emptyList(),
+    val loric: List<Character> = emptyList(),
     val activeJinxes: List<Jinx> = emptyList(),
     val bluffRoles: List<Character> = emptyList(),
     val amnesiacRole: Character? = null,
@@ -35,14 +35,17 @@ data class ChosenRoles(
 
 class RoleAssigner(private val gameElements: GameElements) {
     val roleCountTable: Map<Int, RoleCount> = mapOf(
-        5 to RoleCount(4, 0, 0, 1),
-        6 to RoleCount(4, 0, 1, 1),
-        7 to RoleCount(4, 1, 1, 1),
+        5 to RoleCount(3, 0, 1, 1),
+        6 to RoleCount(3, 1, 1, 1),
+        7 to RoleCount(5, 0, 1, 1),
         8 to RoleCount(5, 1, 1, 1),
         9 to RoleCount(5, 2, 1, 1),
-        10 to RoleCount(5, 2, 2, 1),
-        11 to RoleCount(6, 2, 2, 1),
-        12 to RoleCount(6, 3, 2, 1)
+        10 to RoleCount(7, 0, 2, 1),
+        11 to RoleCount(7, 1, 2, 1),
+        12 to RoleCount(7, 2, 2, 1),
+        13 to RoleCount(9, 0, 3, 1),
+        14 to RoleCount(9, 1, 3, 1),
+        15 to RoleCount(9, 2, 3, 1)
     )
 
     fun legionRoles(script: Script, players: List<String>, legion: Character): ChosenRoles {
@@ -144,7 +147,7 @@ class RoleAssigner(private val gameElements: GameElements) {
             playerRoles = assignments,
             fabled = selectedScript.fabled,
             loric = selectedScript.loric,
-            activeJinxes = if (selectedScript.fabled?.id == "djinn")
+            activeJinxes = if (selectedScript.fabled.any { it.id == "djinn"})
                 computeJinxes(chosenRoles.playerRoles) else emptyList(),
             bluffRoles = chosenRoles.bluffRoles,
             amnesiacRole = chosenRoles.amnesiacRole,

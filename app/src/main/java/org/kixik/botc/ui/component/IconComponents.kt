@@ -2,17 +2,10 @@ package org.kixik.botc.ui.component
 
 import android.content.Context
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -21,36 +14,6 @@ import androidx.compose.ui.unit.dp
 import org.kixik.botc.R
 import org.kixik.botc.service.Character
 import org.kixik.botc.service.CharacterType
-
-@Composable
-fun CharacterRow(
-    modifier: Modifier = Modifier,
-    player: String? = null,
-    character: Character
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        CharacterIcon(character = character)
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = if (player == null) character.name else "$player the ${character.name}",
-                style = MaterialTheme.typography.titleSmall
-            )
-            Text(
-                text = character.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
 
 @Composable
 fun GenericIcon(

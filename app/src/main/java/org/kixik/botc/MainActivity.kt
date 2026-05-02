@@ -1,7 +1,6 @@
 package org.kixik.botc
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -29,7 +28,7 @@ import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import org.kixik.botc.ui.screen.AssignmentPreviewScreen
 import org.kixik.botc.ui.screen.MainMenu
-import org.kixik.botc.ui.screen.ScriptsScreen
+import org.kixik.botc.ui.screen.ViewScriptsScreen
 import org.kixik.botc.ui.screen.SetupGameScreen
 import org.kixik.botc.ui.theme.BotCgamemasterTheme
 
@@ -75,6 +74,7 @@ fun getScreenTitle(destination: NavDestination?): String {
     return when {
         destination?.hasRoute<SetupGame>() == true -> "Set Up Game"
         destination?.hasRoute<AssignmentPreview>() == true -> "Assignment Preview"
+        destination?.hasRoute<ViewScripts>() == true -> "View Scripts"
         else -> ""
     }
 }
@@ -85,6 +85,8 @@ data object MainMenu
 data object SetupGame
 @Serializable
 data class AssignmentPreview(val scriptId: String, val players: List<String>)
+@Serializable
+data object ViewScripts
 
 @Composable
 fun AppNavHost(
@@ -99,7 +101,7 @@ fun AppNavHost(
         composable<MainMenu> {
             MainMenu(
                 onSetupGameClick = { navController.navigate(SetupGame) },
-                onViewScriptsClick = {  }
+                onViewScriptsClick = { navController.navigate(ViewScripts) }
             )
         }
         composable<SetupGame> {
@@ -110,6 +112,9 @@ fun AppNavHost(
         composable<AssignmentPreview> {
             val route = it.toRoute<AssignmentPreview>()
             AssignmentPreviewScreen(scriptId = route.scriptId, players = route.players)
+        }
+        composable<ViewScripts> {
+            ViewScriptsScreen()
         }
     }
 }

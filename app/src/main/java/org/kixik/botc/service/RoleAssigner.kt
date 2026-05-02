@@ -73,8 +73,8 @@ class RoleAssigner(private val gameElements: GameElements) {
             return legionRoles(script, players, demon)
         val selectedMinions = script.minions.shuffled().take(minionCount)
         if (selectedMinions.any { it.id == "baron"}) {
-            outsiderCount++;
-            townsfolkCount--;
+            outsiderCount++
+            townsfolkCount--
         }
         val selectedOutsiders = script.outsiders.shuffled().take(outsiderCount)
         val selectedTownsfolk = script.townsfolk.shuffled().take(townsfolkCount)

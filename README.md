@@ -13,11 +13,6 @@ I started this project out in C# as a CLI application and later ported it to Kot
 
 In its current state, the App allows you to generate a full list of assigned roles to players of your choice based on a selected script. The scripts are built into the app but are just JSONs that I parse, so the plan is to allow the user to import their own scripts in the future.
 
-<div style="display: flex; gap: 1rem; align-items: flex-start;">
-	<img src="/images/script_menu.png" alt="assignments1" style="width: calc(50% - 0.5rem); aspect-ratio: 450 / 919; object-fit: cover;" />
-	<img src="/images/grimiore.gif" alt="assignments2" style="width: calc(50% - 0.5rem); aspect-ratio: 450 / 919; object-fit: cover;" />
-</div>
-
 ## Features
 
 - Script manager that dynamically parses scripts.
@@ -26,11 +21,6 @@ In its current state, the App allows you to generate a full list of assigned rol
 - Algorithm that automatically assigns roles and subroles to the added players based on the game rules and dynamics.
 - Preview screen showing all player's assigned roles and other relevant info for the Storyteller.
 - System for computing active role Jinxes (special rules to resolve pairs of conflicting roles).
-
-<div style="display: flex; gap: 1rem; align-items: flex-start;">
-	<img src="/images/script_assigned1.png" alt="assignments1" style="width: calc(50% - 0.5rem); height: auto;" />
-	<img src="/images/script_assigned2.png" alt="assignments2" style="width: calc(50% - 0.5rem); height: auto;" />
-</div>
 
 ## Future Plans
 
